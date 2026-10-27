@@ -113,15 +113,12 @@ attacker feedback needed to iterate.
 
 | Member name | Roll number | Category       | Variant implemented                  |
 |-------------|--------------|-----------------|----------------------------------------|
-| *(fill in)* | *(fill in)*  | SQL injection   | Variant 1 — Authentication bypass      |
-| *(fill in)* | *(fill in)*  | *(teammate)*    | *(teammate's category/variant)*        |
-| *(fill in)* | *(fill in)*  | *(teammate)*    | *(teammate's category/variant)*        |
-| *(fill in)* | *(fill in)*  | *(teammate)*    | *(teammate's category/variant)*        |
+| Krish Garg | IIT2024238  | SQL injection   | Variant 1 — Authentication bypass      |
 
 ## 8. Project structure
 
 ```
-sql-injection/
+sqli-node/
 ├── server.js        # Express app: vulnerable + secure routes
 ├── views/
 │   ├── index.ejs     # landing page with links + payload hint
