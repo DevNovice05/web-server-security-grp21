@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title><%= mode.includes("VULNERABLE") ? "Vulnerable" : "Secure" %> Login | SQL Injection Lab</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #f3f6fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --navy: #101827;
+    }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; }
+    .topbar { background: var(--navy); color: #fff; }
+    .topbar-inner, main, footer { width: min(100% - 40px, 960px); margin: 0 auto; }
+    .topbar-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 700; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #263b67; color: #a9c1ff; font-size: 15px; }
+    .top-note { color: #c3ccdc; font-size: .85rem; }
+    main { padding: 42px 0 55px; }
+    .back { display: inline-flex; align-items: center; gap: 7px; color: #526075; font-size: .88rem; font-weight: 650; text-decoration: none; }
+    .back:hover { color: #233858; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(250px, .75fr); gap: 20px; align-items: start; margin-top: 25px; }
+    .panel, .side-panel { border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgb(15 23 42 / 4%); }
+    .panel { padding: clamp(22px, 4vw, 34px); }
+    .mode { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; letter-spacing: .055em; text-transform: uppercase; }
+    .mode.vulnerable { background: #fff0ef; color: #b6322c; }
+    .mode.secure { background: #eaf8f1; color: #147344; }
+    .mode-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    h1 { margin: 15px 0 8px; color: #101827; font-size: clamp(1.7rem, 4vw, 2.2rem); letter-spacing: -.04em; }
+    .subtitle { margin: 0; color: var(--muted); font-size: .94rem; line-height: 1.6; }
+    form { margin-top: 25px; }
+    .field { margin-top: 17px; }
+    label { display: block; margin-bottom: 7px; color: #344158; font-size: .86rem; font-weight: 700; }
+    input { width: 100%; min-height: 45px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #172033; font: inherit; font-size: .92rem; }
+    input::placeholder { color: #94a3b8; }
+    input:focus { border-color: #5578ed; outline: 3px solid #dfe7ff; }
+    .field-hint { display: block; margin-top: 6px; color: #758196; font-size: .77rem; line-height: 1.45; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; }
+    button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; color: #fff; font: inherit; font-size: .9rem; font-weight: 750; cursor: pointer; }
+    button.submit.vulnerable { background: #c9423c; }
+    button.submit.secure { background: #16834e; }
+    button.secondary { border: 1px solid var(--line); background: #fff; color: #475569; }
+    button:hover { filter: brightness(.97); }
+    button:focus-visible, a:focus-visible { outline: 3px solid #8daaff; outline-offset: 3px; }
+    .result { margin-top: 24px; padding: 15px 16px; border: 1px solid; border-radius: 10px; }
+    .result.success { border-color: #a9dfbf; background: #effaf3; color: #145c35; }
+    .result.fail { border-color: #f0c1be; background: #fff5f4; color: #8e2924; }
+    .result-title { display: flex; align-items: center; gap: 8px; font-weight: 800; }
+    .result p { margin: 6px 0 0; font-size: .85rem; line-height: 1.55; }
+    .query-wrap { margin-top: 18px; }
+    .query-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #4b5870; font-size: .78rem; font-weight: 750; }
+    pre { max-height: 220px; margin: 0; padding: 14px; overflow: auto; border: 1px solid #202b40; border-radius: 10px; background: #101827; color: #d7e3ff; font: .79rem/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .side-panel { padding: 22px; }
+    .side-panel h2 { margin: 0; color: #1b2639; font-size: 1rem; }
+    .side-panel > p { margin: 9px 0 0; color: var(--muted); font-size: .85rem; line-height: 1.6; }
+    .payload-box { margin-top: 16px; padding: 13px; border: 1px solid #e5eaf2; border-radius: 9px; background: #f8fafc; }
+    .payload-label { display: block; margin-bottom: 7px; color: #69768a; font-size: .72rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    code { color: #35435a; font: .8rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .side-note { margin-top: 16px !important; padding-top: 14px; border-top: 1px solid var(--line); font-size: .78rem !important; }
+    footer { padding: 0 0 25px; color: #7b8798; font-size: .78rem; }
+    @media (max-width: 720px) {
+      .topbar-inner, main, footer { width: min(100% - 30px, 560px); }
+      .top-note { display: none; }
+      main { padding-top: 30px; }
+      .layout { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <% const isVulnerable = mode.includes("VULNERABLE"); %>
+  <% const didSucceed = result && result.startsWith("LOGIN SUCCESS"); %>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">SQL</span><span>Web Security Lab</span></div>
+      <div class="top-note">Authentication bypass · Variant 1</div>
+    </div>
+  </header>
+
+  <main>
+    <a class="back" href="/"><span aria-hidden="true">←</span> Back to comparison</a>
+    <div class="layout">
+      <section class="panel">
+        <span class="mode <%= isVulnerable ? 'vulnerable' : 'secure' %>"><span class="mode-dot" aria-hidden="true"></span><%= isVulnerable ? 'Intentionally vulnerable' : 'Mitigation: parameterized query' %></span>
+        <h1><%= isVulnerable ? 'Vulnerable login' : 'Secure login' %></h1>
+        <p class="subtitle"><%= isVulnerable ? 'Test how direct SQL string construction can change the login condition.' : 'The query uses placeholders, so submitted values are handled as data.' %></p>
+
+        <form method="POST" action="<%= endpoint %>">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" type="text" name="username" placeholder="Enter a username or the demo payload" autocomplete="off" spellcheck="false" aria-describedby="username-hint">
+            <span id="username-hint" class="field-hint"><%= isVulnerable ? 'For this local assignment demo, use the sample payload shown alongside.' : 'Try the same payload from the vulnerable demonstration.' %></span>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password" placeholder="Enter any value for the demo" autocomplete="off">
+          </div>
+          <div class="actions">
+            <button class="submit <%= isVulnerable ? 'vulnerable' : 'secure' %>" type="submit">Run <%= isVulnerable ? 'vulnerable' : 'secure' %> check <span aria-hidden="true">→</span></button>
+            <% if (isVulnerable) { %>
+              <button class="secondary" type="button" id="fill-payload">Fill demo payload</button>
+            <% } %>
+          </div>
+        </form>
+
+        <% if (result) { %>
+          <div class="result <%= didSucceed ? 'success' : 'fail' %>" role="status" aria-live="polite">
+            <div class="result-title"><span aria-hidden="true"><%= didSucceed ? '✓' : '!' %></span><%= didSucceed ? 'Login check succeeded' : 'Login check failed' %></div>
+            <p><%= result %></p>
+          </div>
+        <% } %>
+
+        <% if (query_shown) { %>
+          <div class="query-wrap">
+            <div class="query-label"><span>SQL query <%= isVulnerable ? 'executed' : 'used' %></span><span>Escaped for display</span></div>
+            <pre><%= query_shown %></pre>
+          </div>
+        <% } %>
+      </section>
+
+      <aside class="side-panel">
+        <h2>Variant 1 · Authentication bypass</h2>
+        <p>Use this payload only against the vulnerable route in this local assignment application. Then submit the exact same values to the secure route.</p>
+        <div class="payload-box">
+          <span class="payload-label">Username payload</span>
+          <code>' OR '1'='1' -- </code>
+        </div>
+        <div class="payload-box">
+          <span class="payload-label">Password</span>
+          <code>anything</code>
+        </div>
+        <p class="side-note"><strong>What to observe:</strong> the vulnerable route should report the first matching account; the parameterized route should report a failed login for the same input.</p>
+        <p class="side-note">This is a database-query demonstration, not a persistent authenticated session. Keep the application local.</p>
+      </aside>
+    </div>
+  </main>
+  <footer>For authorized coursework demonstration on localhost only.</footer>
+  <% if (isVulnerable) { %>
+    <script>
+      document.getElementById("fill-payload").addEventListener("click", () => {
+        document.getElementById("username").value = "' OR '1'='1' -- ";
+        document.getElementById("password").value = "anything";
+        document.getElementById("username").focus();
+      });
+    </script>
+  <% } %>
+</body>
+</html>

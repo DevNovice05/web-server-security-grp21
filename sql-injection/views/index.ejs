@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>SQL Injection Lab | Authentication Bypass</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #f3f6fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --navy: #101827;
+      --blue: #315ee8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: inherit; }
+    .topbar { background: var(--navy); color: #fff; }
+    .topbar-inner, main, footer { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar-inner { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 700; letter-spacing: .01em; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #263b67; color: #a9c1ff; font-size: 15px; }
+    .top-note { color: #c3ccdc; font-size: .86rem; }
+    main { padding: 48px 0 64px; }
+    .eyebrow { margin: 0 0 13px; color: var(--blue); font-size: .76rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { max-width: 760px; margin: 0; color: #101827; font-size: clamp(2rem, 5vw, 3.45rem); letter-spacing: -.045em; line-height: 1.08; }
+    .intro { max-width: 700px; margin: 17px 0 0; color: var(--muted); font-size: 1.08rem; line-height: 1.7; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 21px; }
+    .tag { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #475569; font-size: .78rem; font-weight: 650; }
+    .tag.primary { border-color: #c7d5ff; background: #edf2ff; color: #294dbd; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin: 42px 0 16px; }
+    h2 { margin: 0; color: #172033; font-size: 1.25rem; letter-spacing: -.02em; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card { position: relative; display: flex; flex-direction: column; min-height: 264px; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgb(15 23 42 / 4%); }
+    .card-top { display: flex; align-items: center; gap: 12px; }
+    .icon { width: 40px; height: 40px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 12px; font-size: 1.05rem; font-weight: 800; }
+    .icon.danger { background: #fff0ef; color: #c33b35; }
+    .icon.safe { background: #eaf8f1; color: #16834e; }
+    .card h3 { margin: 0; font-size: 1.06rem; }
+    .label { margin-top: 4px; color: var(--muted); font-size: .78rem; }
+    .card > p { margin: 19px 0 24px; color: #526075; font-size: .92rem; line-height: 1.65; }
+    .card-action { margin-top: auto; }
+    .button { display: inline-flex; min-height: 43px; align-items: center; justify-content: center; gap: 9px; padding: 0 15px; border: 0; border-radius: 9px; color: #fff; font: inherit; font-size: .9rem; font-weight: 700; text-decoration: none; transition: transform .15s ease, filter .15s ease; }
+    .button:hover { filter: brightness(.96); transform: translateY(-1px); }
+    .button:focus-visible, a:focus-visible { outline: 3px solid #8daaff; outline-offset: 3px; }
+    .button.danger { background: #c9423c; }
+    .button.safe { background: #16834e; }
+    .button .arrow { font-size: 1.1rem; }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin-top: 15px; }
+    .step { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .step-number { color: var(--blue); font-size: .75rem; font-weight: 800; letter-spacing: .08em; }
+    .step strong { display: block; margin-top: 8px; font-size: .91rem; }
+    .step p { margin: 6px 0 0; color: var(--muted); font-size: .83rem; line-height: 1.5; }
+    code { padding: 2px 6px; border: 1px solid #e6eaf1; border-radius: 5px; background: #f4f6fa; color: #334155; font: .9em ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .notice { display: flex; gap: 13px; margin-top: 22px; padding: 16px 18px; border: 1px solid #dbe5f4; border-radius: 12px; background: #edf4ff; color: #405472; font-size: .86rem; line-height: 1.6; }
+    .notice strong { color: #233858; }
+    footer { padding: 0 0 27px; color: #7b8798; font-size: .78rem; }
+    @media (max-width: 700px) {
+      .topbar-inner, main, footer { width: min(100% - 30px, 560px); }
+      .top-note { display: none; }
+      main { padding-top: 36px; }
+      .comparison, .steps { grid-template-columns: 1fr; }
+      .card { min-height: 0; }
+      .section-heading { align-items: start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">SQL</span><span>Web Security Lab</span></div>
+      <div class="top-note">Local classroom demonstration · localhost only</div>
+    </div>
+  </header>
+
+  <main>
+    <p class="eyebrow">Cyber Security · Web Server Security</p>
+    <h1>SQL injection:<br>authentication bypass</h1>
+    <p class="intro">A controlled demonstration of how unsafe SQL construction can bypass a login check—and how a parameterized query prevents the same input from changing the query.</p>
+    <div class="tag-row" aria-label="Assignment details">
+      <span class="tag primary">Variant 1</span>
+      <span class="tag">SQL injection</span>
+      <span class="tag">Exploit + mitigation</span>
+    </div>
+
+    <div class="section-heading">
+      <h2>Compare the two implementations</h2>
+      <p>Use the exact same test input on both forms.</p>
+    </div>
+    <section class="comparison" aria-label="Login demonstrations">
+      <article class="card">
+        <div class="card-top">
+          <div class="icon danger" aria-hidden="true">!</div>
+          <div><h3>Vulnerable login</h3><div class="label">Unsafe string concatenation</div></div>
+        </div>
+        <p>Submitted input is joined directly into the SQL statement. Try the demonstration payload and inspect the query that was executed.</p>
+        <div class="card-action"><a class="button danger" href="/login-vulnerable">Open vulnerable demo <span class="arrow" aria-hidden="true">→</span></a></div>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon safe" aria-hidden="true">✓</div>
+          <div><h3>Secure login</h3><div class="label">Parameterized query mitigation</div></div>
+        </div>
+        <p>The same credentials are bound as data using placeholders. The payload should not alter the SQL structure, so the login attempt fails.</p>
+        <div class="card-action"><a class="button safe" href="/login-secure">Open secure demo <span class="arrow" aria-hidden="true">→</span></a></div>
+      </article>
+    </section>
+
+    <div class="section-heading">
+      <h2>Demonstration sequence</h2>
+      <p>Run locally and capture both outcomes.</p>
+    </div>
+    <section class="steps" aria-label="Demonstration steps">
+      <article class="step"><span class="step-number">STEP 01</span><strong>Trigger the vulnerable route</strong><p>Submit the sample username and any password; observe the admin result and generated SQL.</p></article>
+      <article class="step"><span class="step-number">STEP 02</span><strong>Explain why it works</strong><p>Show the concatenation in the vulnerable route and explain how input changes the query logic.</p></article>
+      <article class="step"><span class="step-number">STEP 03</span><strong>Prove the mitigation</strong><p>Send the same input to the secure route; show the failed login and explain the placeholders.</p></article>
+    </section>
+
+    <aside class="notice">
+      <span aria-hidden="true">ⓘ</span>
+      <div><strong>For the assignment demo only.</strong> This app reports the result of a database lookup; it does not create a persistent login session. Test only this local application. Do not expose it to a public network.</div>
+    </aside>
+  </main>
+  <footer>SQL Injection · Authentication Bypass · Variant 1</footer>
+</body>
+</html>
