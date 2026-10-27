@@ -3,5 +3,4 @@ node_modules/
 # Never commit private keys — the cert is generated locally with `npm run cert`
 certs/*.pem
 
-README.md
 VIVA.md
