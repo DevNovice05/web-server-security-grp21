@@ -124,41 +124,6 @@ The attacker's page can't **read** the token (same-origin policy) and can't
 > JavaScript; the browser still attaches it to the request.
 
 ---
-
-## GET vs POST variant (context)
-
-| | GET (Variant 1) | POST — mine (Variant 2) |
-|--|-----------------|--------------------------|
-| Payload | in the URL | forged in the request body |
-| Trigger | `<img>`, link, redirect — no JS | auto-submitting `<form>` + 1 line of JS |
-| When possible | only if the app allows a state change over GET | the realistic case for a well-built app |
-
-Both succeed only because the browser auto-attaches the session cookie to the
-cross-site request; neither attacker needs to read the response.
-
----
-
-## Why HTTPS + a self-signed certificate?
-
-The exploit needs the browser to send the session cookie on a cross-site POST.
-Modern browsers default cookies to `SameSite=Lax`, which blocks that. So the
-cookie is set to `SameSite=None` — which requires `Secure`, which requires
-HTTPS, which on `localhost` requires a self-signed cert.
-**SameSite=None → needs Secure → needs HTTPS → needs a cert.**
-
----
-
-## Key points expected (viva readiness)
-
-- **Define CSRF:** forcing a logged-in victim's browser to send a state-changing request they didn't intend; the site trusts the auto-attached session cookie.
-- **Three conditions:** a state-changing action, cookie-based sessions, and no unguessable anti-CSRF token.
-- **Why it worked despite SameSite defaults:** the cookie is `SameSite=None` (needs Secure → HTTPS → the self-signed cert).
-- **Why cross-site / why `localhost` vs `127.0.0.1`:** the browser treats them as different sites, so the request is genuinely cross-site without editing the hosts file.
-- **Why the token defeats it:** the attacker can't read it (same-origin policy) or guess 256 bits, so the forged POST has no valid token → 403.
-- **CSRF is a *write* attack** — the attacker causes an action but never reads the response (unlike XSS).
-- **HttpOnly does not stop CSRF** (common trick question).
-- **Token placement:** hidden form field compared to the session's copy server-side; storing it in a second cookie instead is the "double-submit cookie" pattern.
-
 ## Layout
 
 ```
