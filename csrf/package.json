@@ -1,0 +1,11 @@
+{
+  "name": "csrf-post-demo",
+  "version": "1.0.0",
+  "description": "CSRF Variant 2 (POST-based forged action, auto-submitting form) — exploit and mitigation demo for IT-30001 Web Server Security. Pure Node.js, no dependencies.",
+  "scripts": {
+    "cert": "bash certs/gen-cert.sh",
+    "victim": "node victim/server.js",
+    "victim:secure": "node victim/secure.js",
+    "attacker": "node attacker/server.js"
+  }
+}
