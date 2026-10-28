@@ -3,7 +3,7 @@
 **Course:** Cyber Security (IT-30001) · Web Server Security
 **Category:** Cross-Site Request Forgery (CSRF)
 **Variant:** Variant 2 — POST-based forged action (auto-submitting form)
-**Author:** *(your name · roll no.)*
+**Author:** *(Aditya tiwari . IIT2024255)*
 
 A minimal, self-contained demo that **exploits** a CSRF vulnerability and then
 **blocks the same exploit** with an anti-CSRF (synchronizer) token.
